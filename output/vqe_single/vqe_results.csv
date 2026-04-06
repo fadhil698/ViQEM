@@ -1,0 +1,5 @@
+key,status,energy,method
+ideal,done,-1.8572750302023784,exact_diagonalization
+noisy,done,-1.750092189650009,optimization
+zne,done,-2.398306495314166,optimization
+mitigated,skipped,,
