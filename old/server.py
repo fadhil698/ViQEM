@@ -25,7 +25,7 @@ except ImportError:
     logger.warning("Covalent not available. Install with: pip install covalent")
 
 from qiskit.quantum_info import SparsePauliOp
-from ML_QEM.qem_main_updated_v2 import (
+from old.qem_main_updated_v2 import (
     GenerateAnsatz, AnsatzConfig, CalculateEnergy,
     TrainML, VQERunner, H2HamiltonianGenerator, ExtendedPipeline
 )
@@ -114,7 +114,7 @@ def prepare_dataset_task(
     """
     logger.info(f"Generating dataset for observable: {observable}")
     
-    from ML_QEM.qem_main_updated_v2 import GenerateAnsatz, AnsatzConfig, CalculateEnergy
+    from old.qem_main_updated_v2 import GenerateAnsatz, AnsatzConfig, CalculateEnergy
     
     # Create components
     config = AnsatzConfig(n_qubits=n_qubits)
@@ -180,7 +180,7 @@ def train_model_task(
     """
     logger.info(f"Training model from {len(observable_results)} observables")
     
-    from ML_QEM.qem_main_updated_v2 import TrainML
+    from old.qem_main_updated_v2 import TrainML
     
     # Aggregate data dari semua observables
     all_noisy = []
@@ -361,7 +361,7 @@ def vqe_single_bondlength_task(
     """
     logger.info(f"Running VQE for bond_length={bond_length:.3f}Å")
     
-    from ML_QEM.qem_main_updated_v2 import H2HamiltonianGenerator, GenerateAnsatz, AnsatzConfig, VQERunner
+    from old.qem_main_updated_v2 import H2HamiltonianGenerator, GenerateAnsatz, AnsatzConfig, VQERunner
     
     # Generate H2 Hamiltonian
     h2_gen = H2HamiltonianGenerator(n_qubits=n_qubits)

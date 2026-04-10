@@ -29,7 +29,7 @@ class VQEPipeline:
         n_qubits: int = 4,
         output_dir: str = "qem_output"
     ):
-        from ML_QEM.qem_main_updated_v2 import (
+        from old.qem_main_updated_v2 import (
             GenerateAnsatz,
             AnsatzConfig,
             CalculateEnergy,
@@ -76,7 +76,7 @@ class VQEPipeline:
         logger.info("QEM FULL VQE PIPELINE (SINGLE BOND LENGTH)")
         logger.info("=" * 70)
 
-        from ML_QEM.qem_main_updated_v2 import VQERunner
+        from old.qem_main_updated_v2 import VQERunner
         
         # Create ansatz
         ansatz = self.ansatz_gen.create_ansatz()
@@ -162,7 +162,7 @@ class VQEPipeline:
         logger.info("=" * 70)
         logger.info(f"Bond lengths: {bond_lengths}")
         
-        from ML_QEM.qem_main_updated_v2 import VQERunner
+        from old.qem_main_updated_v2 import VQERunner
         
         # Step 1: Generate Hamiltonian untuk semua bond lengths
         logger.info(f"\n[STEP 1] Generating Hamiltonians untuk {len(bond_lengths)} bond lengths...")
