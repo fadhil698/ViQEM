@@ -1,0 +1,27 @@
+# Ansatz
+rotation_blocks = ry
+entanglement = linear
+entanglement_blocks = cx
+reps = 2
+
+# Noise
+noise_type = fake_athens
+custom_noise_qubits = 0 1 2 3
+
+# Dataset
+n_circuits = 2000
+theta_min = -3.14159
+theta_max = 3.14159
+data_condition = custom
+
+# VQE
+bond_lengths = 0.25 0.45 0.65 0.725 0.80 1.50 2.50 3.00
+maxiter = 125
+
+# I/O
+test_data_dir = input/test_data
+base_output_dir = outputV1
+
+# Parallelisme
+max_workers_data = 8
+max_workers_pipeline = 12

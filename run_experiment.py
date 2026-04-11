@@ -58,6 +58,76 @@ logger = logging.getLogger("run_experiment")
 # EXPERIMENT CONFIGURATION
 # ============================================================================
 
+def load_config_file(path: str) -> Dict[str, str]:
+    """Baca file config .txt format key = value."""
+    params = {}
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, _, value = line.partition("=")
+            params[key.strip()] = value.strip()
+    return params
+
+
+def apply_config_file(args: argparse.Namespace, config_path: str) -> argparse.Namespace:
+    """Override args dengan nilai dari config file."""
+    raw = load_config_file(config_path)
+    list_fields = {"rotation_blocks", "custom_noise_qubits", "bond_lengths"}
+    int_fields = {"reps", "n_circuits", "maxiter", "max_workers_data", "max_workers_pipeline"}
+    float_fields = {"theta_min", "theta_max"}
+    int_list_fields = {"custom_noise_qubits"}
+    float_list_fields = {"bond_lengths"}
+
+    for key, val in raw.items():
+        if key in list_fields:
+            if key in int_list_fields:
+                setattr(args, key.replace("-", "_"), [int(x) for x in val.split()])
+            elif key in float_list_fields:
+                setattr(args, key.replace("-", "_"), [float(x) for x in val.split()])
+            else:
+                setattr(args, key.replace("-", "_"), val.split())
+        elif key in int_fields:
+            setattr(args, key.replace("-", "_"), int(val))
+        elif key in float_fields:
+            setattr(args, key.replace("-", "_"), float(val))
+        else:
+            setattr(args, key.replace("-", "_"), val)
+    return args
+
+def log_run_to_file(cfg: ExperimentConfig, args: argparse.Namespace, 
+                    elapsed: float, status: str = "COMPLETED"):
+    """Catat detail setiap run ke file log permanen."""
+    log_path = "run_history.log"
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    
+    with open(log_path, "a") as f:
+        f.write(f"\n{'='*60}\n")
+        f.write(f"TIMESTAMP    : {timestamp}\n")
+        f.write(f"STATUS       : {status}\n")
+        f.write(f"MODE         : {args.mode}\n")
+        f.write(f"KONDISI      : {cfg.get_condition_label()}\n")
+        f.write(f"FINGERPRINT  : {cfg.fingerprint()}\n")
+        f.write(f"OUTPUT DIR   : {cfg.base_output_dir}\n")
+        f.write(f"DATA DIR     : {cfg.test_data_dir}\n")
+        f.write(f"--- Ansatz ---\n")
+        f.write(f"rotation_blocks     : {cfg.rotation_blocks}\n")
+        f.write(f"entanglement        : {cfg.entanglement}\n")
+        f.write(f"entanglement_blocks : {cfg.entanglement_blocks}\n")
+        f.write(f"reps                : {cfg.reps}\n")
+        f.write(f"--- Noise ---\n")
+        f.write(f"noise_type          : {cfg.noise_type}\n")
+        f.write(f"custom_noise_qubits : {cfg.custom_noise_qubits}\n")
+        f.write(f"--- Dataset ---\n")
+        f.write(f"n_circuits          : {cfg.n_circuits}\n")
+        f.write(f"theta_range         : [{cfg.theta_min}, {cfg.theta_max}]\n")
+        f.write(f"--- VQE ---\n")
+        f.write(f"bond_lengths        : {cfg.bond_lengths}\n")
+        f.write(f"maxiter             : {cfg.maxiter}\n")
+        f.write(f"--- Waktu ---\n")
+        f.write(f"elapsed             : {elapsed:.2f} detik\n")
+
 @dataclass
 class ExperimentConfig:
     """
@@ -583,6 +653,8 @@ Contoh penggunaan:
                    help="Paksa regenerasi dataset meskipun cache valid.")
     p.add_argument("--only-data", action="store_true",
                    help="Hanya generate dataset, tidak menjalankan pipeline.")
+    p.add_argument("--config", type=str, default=None,
+               help="Path ke file config .txt (override semua argumen lain).")
 
     return p.parse_args()
 
@@ -594,6 +666,9 @@ Contoh penggunaan:
 def main():
     args = parse_args()
     start_time = time.time()
+    
+    if args.config:
+        args = apply_config_file(args, args.config)
 
     # ── Bangun ExperimentConfig dari argumen ──────────────────────────────
     cfg = ExperimentConfig(
@@ -614,61 +689,71 @@ def main():
         max_workers_pipeline = args.max_workers_pipeline,
         data_condition       = args.data_condition,
     )
+    
+    try:
+        # ... seluruh logika main() yang sudah ada ...
 
-    modes_to_run = resolve_modes(args.mode)
+        modes_to_run = resolve_modes(args.mode)
 
-    # ── Banner ───────────────────────────────────────────────────────────────
-    print(f"\n{'='*65}")
-    print(f"  🚀 UNIFIED ML-QEM EXPERIMENT RUNNER")
-    print(f"{'='*65}")
-    print(f"  Mode         : {args.mode.upper()} ({len(modes_to_run)} variasi)")
-    print(f"  Kondisi      : {cfg.get_condition_label()}")
-    print(f"  Fingerprint  : {cfg.fingerprint()}")
-    print(f"  Ansatz       : rot={cfg.rotation_blocks}, ent={cfg.entanglement}/")
-    print(f"                 {cfg.entanglement_blocks}, reps={cfg.reps}")
-    print(f"  Noise        : {cfg.noise_type}")
-    print(f"  n_circuits   : {cfg.n_circuits}")
-    print(f"  theta range  : [{cfg.theta_min:.4f}, {cfg.theta_max:.4f}]")
-    print(f"  bond_lengths : {cfg.bond_lengths}")
-    print(f"  max_workers  : data={cfg.max_workers_data}, pipeline={cfg.max_workers_pipeline}")
-    print(f"{'='*65}\n")
+        # ── Banner ───────────────────────────────────────────────────────────────
+        print(f"\n{'='*65}")
+        print(f"  🚀 UNIFIED ML-QEM EXPERIMENT RUNNER")
+        print(f"{'='*65}")
+        print(f"  Mode         : {args.mode.upper()} ({len(modes_to_run)} variasi)")
+        print(f"  Kondisi      : {cfg.get_condition_label()}")
+        print(f"  Fingerprint  : {cfg.fingerprint()}")
+        print(f"  Ansatz       : rot={cfg.rotation_blocks}, ent={cfg.entanglement}/")
+        print(f"                 {cfg.entanglement_blocks}, reps={cfg.reps}")
+        print(f"  Noise        : {cfg.noise_type}")
+        print(f"  n_circuits   : {cfg.n_circuits}")
+        print(f"  theta range  : [{cfg.theta_min:.4f}, {cfg.theta_max:.4f}]")
+        print(f"  bond_lengths : {cfg.bond_lengths}")
+        print(f"  max_workers  : data={cfg.max_workers_data}, pipeline={cfg.max_workers_pipeline}")
+        print(f"{'='*65}\n")
 
-    # ── STEP 1: Generate / Validasi Dataset ──────────────────────────────────
-    generate_all_datasets(cfg, force=args.force_regen_data)
+        # ── STEP 1: Generate / Validasi Dataset ──────────────────────────────────
+        generate_all_datasets(cfg, force=args.force_regen_data)
 
-    if args.only_data:
+        if args.only_data:
+            elapsed = time.time() - start_time
+            print(f"\n✅ Dataset generation selesai dalam {elapsed:.2f} detik.")
+            return
+
+        # ── STEP 2: Jalankan Pipeline ─────────────────────────────────────────────
+        print(f"\n{'='*65}")
+        print(f"  ⚙  PIPELINE EXECUTION")
+        print(f"  Queue: {len(modes_to_run)} mode | Workers: {cfg.max_workers_pipeline}")
+        print(f"{'='*65}\n")
+
+        noise_model = build_noise_model(cfg)
+        cfg_dict = asdict(cfg)  # dict agar bisa di-pickle lintas proses
+
+        with ProcessPoolExecutor(max_workers=cfg.max_workers_pipeline) as executor:
+            future_to_mode = {
+                executor.submit(run_pipeline_for_mode, m, cfg_dict, noise_model): m
+                for m in modes_to_run
+            }
+
+            for future in as_completed(future_to_mode):
+                mode_name = future_to_mode[future]
+                try:
+                    result = future.result()
+                    icon = "✅" if result.startswith("SUCCESS") else "❌"
+                    print(f"  {icon} {result}")
+                except Exception as exc:
+                    print(f"  ❌ ERROR pada {mode_name}: {exc}")
+
         elapsed = time.time() - start_time
-        print(f"\n✅ Dataset generation selesai dalam {elapsed:.2f} detik.")
-        return
+        print(f"\n{'='*65}")
+        print(f"  🏁 SELESAI — mode '{args.mode}' dalam {elapsed:.2f} detik")
+        print(f"{'='*65}\n")
+        
+        log_run_to_file(cfg, args, elapsed, status="COMPLETED")
 
-    # ── STEP 2: Jalankan Pipeline ─────────────────────────────────────────────
-    print(f"\n{'='*65}")
-    print(f"  ⚙  PIPELINE EXECUTION")
-    print(f"  Queue: {len(modes_to_run)} mode | Workers: {cfg.max_workers_pipeline}")
-    print(f"{'='*65}\n")
-
-    noise_model = build_noise_model(cfg)
-    cfg_dict = asdict(cfg)  # dict agar bisa di-pickle lintas proses
-
-    with ProcessPoolExecutor(max_workers=cfg.max_workers_pipeline) as executor:
-        future_to_mode = {
-            executor.submit(run_pipeline_for_mode, m, cfg_dict, noise_model): m
-            for m in modes_to_run
-        }
-
-        for future in as_completed(future_to_mode):
-            mode_name = future_to_mode[future]
-            try:
-                result = future.result()
-                icon = "✅" if result.startswith("SUCCESS") else "❌"
-                print(f"  {icon} {result}")
-            except Exception as exc:
-                print(f"  ❌ ERROR pada {mode_name}: {exc}")
-
-    elapsed = time.time() - start_time
-    print(f"\n{'='*65}")
-    print(f"  🏁 SELESAI — mode '{args.mode}' dalam {elapsed:.2f} detik")
-    print(f"{'='*65}\n")
+        log_run_to_file(cfg, args, time.time() - start_time, "COMPLETED")
+    except Exception as e:
+        log_run_to_file(cfg, args, time.time() - start_time, f"FAILED: {e}")
+        raise
 
 
 if __name__ == "__main__":
