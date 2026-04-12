@@ -24,7 +24,7 @@ def generate_ssh_key(ssh_key_path: str):
 
 
 def rsync_call(src: str, dest: str, ssh_key_path: str):
-    cmd = ["rsync", "-avz", "--exclude", ".venv/","--exclude", "unified_output_*/", "--exclude", "hasil_eksperimen*/", "-e", f"ssh -i {ssh_key_path}", src, dest]
+    cmd = ["rsync", "-avz","--delete" ,"--exclude", ".venv/","--exclude", "unified_output_*/", "--exclude", "hasil_eksperimen*/", "-e", f"ssh -i {ssh_key_path}", src, dest]
     subprocess.run(cmd, check=True)
 
 

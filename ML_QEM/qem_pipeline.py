@@ -184,7 +184,7 @@ class CalculateEnergy:
     def __init__(
         self,
         n_qubits: int = 4,
-        backend_class=FakeBelemV2,
+        backend_class=FakeAthensV2,
         noise_model: Optional[NoiseModel] = None,
     ):
         self.n_qubits = n_qubits
