@@ -23,9 +23,8 @@ bond_lengths        : [0.25, 0.45, 0.65, 0.725, 0.8, 1.5, 2.5, 3.0]
 maxiter             : 125
 --- Waktu ---
 elapsed             : 23445.54 detik
-
 ============================================================
-TIMESTAMP    : 2026-04-11 13:47:09
+TIMESTAMP    : 2026-04-12 22:35:53
 STATUS       : COMPLETED
 MODE         : jw
 KONDISI      : custom
@@ -47,4 +46,54 @@ theta_range         : [-3.14159, 3.14159]
 bond_lengths        : [0.25, 0.45, 0.65, 0.725, 0.8, 1.5, 2.5, 3.0]
 maxiter             : 125
 --- Waktu ---
-elapsed             : 23445.56 detik
+elapsed             : 24410.85 detik
+
+============================================================
+TIMESTAMP    : 2026-04-12 22:35:53
+STATUS       : COMPLETED
+MODE         : jw
+KONDISI      : custom
+FINGERPRINT  : 49d3cb314b5c
+OUTPUT DIR   : outputV1
+DATA DIR     : input/test_data
+--- Ansatz ---
+rotation_blocks     : ['ry']
+entanglement        : linear
+entanglement_blocks : cx
+reps                : 2
+--- Noise ---
+noise_type          : fake_athens
+custom_noise_qubits : [0, 1, 2, 3]
+--- Dataset ---
+n_circuits          : 2000
+theta_range         : [-3.14159, 3.14159]
+--- VQE ---
+bond_lengths        : [0.25, 0.45, 0.65, 0.725, 0.8, 1.5, 2.5, 3.0]
+maxiter             : 125
+--- Waktu ---
+elapsed             : 24410.86 detik
+
+============================================================
+TIMESTAMP    : 2026-04-13 01:30:39
+STATUS       : COMPLETED
+MODE         : jw
+KONDISI      : custom
+FINGERPRINT  : 97d24172b6c3
+OUTPUT DIR   : outputV1
+DATA DIR     : input/test_data
+--- Ansatz ---
+rotation_blocks     : ['ry']
+entanglement        : linear
+entanglement_blocks : cx
+reps                : 2
+--- Noise ---
+noise_type          : fake_athens
+custom_noise_qubits : [0, 1, 2, 3]
+--- Dataset ---
+n_circuits          : 1000
+theta_range         : [-3.14159, 3.14159]
+--- VQE ---
+bond_lengths        : [0.25, 0.45, 0.65, 0.725, 0.8, 1.5, 2.5, 3.0]
+maxiter             : 75
+--- Waktu ---
+elapsed             : 12640.64 detik

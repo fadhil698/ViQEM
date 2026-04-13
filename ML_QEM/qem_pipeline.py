@@ -319,26 +319,18 @@ class TrainML:
         observables: List[str],
         parameters: np.ndarray,
     ) -> Tuple[pd.DataFrame, np.ndarray]:
-        """Build feature matrix para training RF model."""
-        n_qubits = len(observables[0]) if observables else 4
         rows = []
 
         for noisy_e, obs, params in zip(noisy_energies, observables, parameters):
             feat: Dict = {"noisy_energy": float(noisy_e)}
             for i, p in enumerate(params):
                 feat[f"param_{i}"] = float(p)
-            # One-hot observable
-            for pos in range(n_qubits):
-                for op in "IXYZ":
-                    feat[f"obs{pos}{op}"] = 0
-            for pos, ch in enumerate(obs):
-                feat[f"obs{pos}{ch}"] = 1
+            # ONE-HOT OBSERVABLE DIHAPUS
             rows.append(feat)
 
         X = pd.DataFrame(rows)
         self.feature_names = list(X.columns)
         return X, np.asarray(ideal_energies)
-
     # ------------------------------------------------------------------
     # Train / predict / persist
     # ------------------------------------------------------------------
@@ -516,11 +508,7 @@ class VQERunner:
             feat: Dict = {"noisy_energy": noisy_exp}
             for i, p in enumerate(theta_arr):
                 feat[f"param_{i}"] = float(p)
-            for pos in range(len(label)):
-                for op in "IXYZ":
-                    feat[f"obs{pos}{op}"] = 0
-            for pos, ch in enumerate(label):
-                feat[f"obs{pos}{ch}"] = 1
+            # One-Hot Obs Di hapus
             rows.append(feat)
 
         X_df = pd.DataFrame(rows, columns=self.ml_trainer.feature_names)

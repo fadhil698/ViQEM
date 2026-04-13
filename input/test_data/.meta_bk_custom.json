@@ -1,8 +1,8 @@
 {
-  "fingerprint": "49d3cb314b5c",
+  "fingerprint": "97d24172b6c3",
   "mapper": "bk",
-  "n_circuits": 2000,
-  "n_rows_actual": 2000,
+  "n_circuits": 1000,
+  "n_rows_actual": 1000,
   "noise_type": "fake_athens",
   "rotation_blocks": [
     "ry"
@@ -14,5 +14,5 @@
     -3.14159,
     3.14159
   ],
-  "generated_at": "2026-04-11 07:17:59"
+  "generated_at": "2026-04-12 22:00:50"
 }

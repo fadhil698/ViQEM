@@ -176,7 +176,7 @@ class ExperimentConfig:
     # Iterasi maksimum SPSA
 
     # ── I/O ──────────────────────────────────────────────────────────────────
-    test_data_dir: str = "input/test_data"
+    test_data_dir: str = "test_data"
     base_output_dir: str = "unified_output"
 
     # ── Paralelisme ──────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ class ExperimentConfig:
     # Jumlah worker untuk pipeline (training + VQE)
 
     # ── Kondisi label (untuk nama file) ──────────────────────────────────────
-    data_condition: str = "custom"
+    data_condition: str = ""
     # Label kondisi eksperimen. Akan digunakan dalam nama file CSV.
     # Jika None, nama file diturunkan otomatis dari fingerprint config.
 
@@ -212,7 +212,7 @@ class ExperimentConfig:
 
     def get_condition_label(self) -> str:
         """Label kondisi yang digunakan dalam nama file CSV."""
-        return self.data_condition if self.data_condition else f"fp_{self.fingerprint()}"
+        return f"fp_{self.fingerprint()}"
 
     def get_csv_path(self, mapper: str) -> str:
         label = self.get_condition_label()
@@ -222,7 +222,16 @@ class ExperimentConfig:
         label = self.get_condition_label()
         return os.path.join(self.test_data_dir, f".meta_{mapper}_{label}.json")
 
-
+    def get_output_dir(self) -> str:
+        """Generate output dir berbasis fingerprint, anti-overwrite."""
+        base = f"out_{self.fingerprint()}"
+        if not os.path.exists(base):
+            return base
+        # Jika sudah ada, cari suffix yang tersedia
+        counter = 1
+        while os.path.exists(f"{base}_{counter}"):
+            counter += 1
+        return f"{base}_{counter}"
 # ============================================================================
 # OBSERVABLE SETS DATABASE
 # ============================================================================
@@ -626,7 +635,7 @@ Contoh penggunaan:
                    help="Batas bawah range parameter theta.")
     p.add_argument("--theta-max", type=float, default=np.pi,
                    help="Batas atas range parameter theta.")
-    p.add_argument("--data-condition", type=str, default="custom",
+    p.add_argument("--data-condition", type=str, default="",
                    help="Label kondisi eksperimen (digunakan dalam nama file CSV).")
 
     # ── VQE ──────────────────────────────────────────────────────────────────
@@ -637,9 +646,9 @@ Contoh penggunaan:
                    help="Iterasi maksimum SPSA untuk VQE.")
 
     # ── I/O ──────────────────────────────────────────────────────────────────
-    p.add_argument("--test-data-dir", type=str, default="input/test_data",
+    p.add_argument("--test-data-dir", type=str, default="test_data",
                    help="Direktori untuk menyimpan/membaca file CSV dataset.")
-    p.add_argument("--base-output-dir", type=str, default="unified_output",
+    p.add_argument("--base-output-dir", type=str, default="",
                    help="Direktori output hasil pipeline.")
 
     # ── Paralelisme ──────────────────────────────────────────────────────────
@@ -689,6 +698,8 @@ def main():
         max_workers_pipeline = args.max_workers_pipeline,
         data_condition       = args.data_condition,
     )
+    cfg.base_output_dir = cfg.get_output_dir()
+    logger.info(f"Output dir: {cfg.base_output_dir}")
     
     try:
         # ... seluruh logika main() yang sudah ada ...
@@ -749,8 +760,6 @@ def main():
         print(f"{'='*65}\n")
         
         log_run_to_file(cfg, args, elapsed, status="COMPLETED")
-
-        log_run_to_file(cfg, args, time.time() - start_time, "COMPLETED")
     except Exception as e:
         log_run_to_file(cfg, args, time.time() - start_time, f"FAILED: {e}")
         raise
