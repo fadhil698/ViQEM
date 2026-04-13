@@ -243,7 +243,7 @@ if __name__ == "__main__":
     # Masukkan fingerprint default (digunakan untuk Fitur 1)
     viz = VQEUnifiedVisualizer(base_path=base_directory, default_fingerprint="49d3cb314b5c")
 
-    print("\n--- Menjalankan Mode 3: Statistik Multi-Eksperimen ---")
+    print("\n--- Menjalankan Statistik Multi-Eksperimen ---")
     
     # List dari semua fingerprint (banyak noise profile)
     list_fingerprints = [
@@ -264,4 +264,4 @@ if __name__ == "__main__":
         fingerprints=list_fingerprints,
         experiment_list=target_list_multi,
         show_energies=['noisy', 'rf', 'zne'],
-        save_name="semua_metode.png")
+        save_name="graph/vqe.png")
